@@ -21,11 +21,11 @@ propósito; empilhar dúvidas é o que faz o aprendizado desandar.
 
 **Pronto quando:** o build passa e nenhum arquivo foi alterado ainda.
 
-### T2. Remover o storyboard e montar a janela
-Três pontos, todos necessários:
-1. Remover `Main.storyboard` do projeto.
-2. Remover a chave `UISceneStoryboardFile` do `Info.plist`.
-3. Remover `INFOPLIST_KEY_UIMainStoryboardFile = Main` das build settings.
+### T2. Desconectar o storyboard do launch e montar a janela
+O arquivo `Main.storyboard` **fica no projeto** (reversibilidade). O que sai é o
+vínculo dele com o launch:
+1. `Info.plist` → *Application Scene Manifest* → remover a chave `UISceneStoryboardFile`.
+2. Build Settings → `INFOPLIST_KEY_UIMainStoryboardFile` → limpar o valor `Main`.
 
 Depois, no `SceneDelegate`: criar a `UIWindow`, definir
 `UINavigationController(rootViewController: ProductListViewController())` como
@@ -161,8 +161,7 @@ sem `UIKit`.
 
 | Critério (§11) | Tarefa |
 |---|---|
-| Abre sem storyboard | T1, T2 |
-| 30 produtos ordenados | T5, T6 |
+| Abre sem storyboard | T1, T2 || 30 produtos ordenados | T5, T6 |
 | Célula reutilizada correta | T11 |
 | Toque abre detalhe correto | T13 |
 | Voltar preserva scroll | T13 |

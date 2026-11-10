@@ -42,7 +42,7 @@ decisão de código.
 - **Cache de imagens** — a v1 só precisa funcionar; baixar de novo ao rolar é
   aceitável. Fica para a v2 (ver §13).
 - Biblioteca externa de qualquer tipo (Kingfisher, Alamofire, SnapKit).
-- SwiftUI, storyboard, XIB.
+- SwiftUI e XIB. (Storyboard não é usado na v1, mas o arquivo permanece no projeto.)
 - Testes automatizados de UI; testes unitários ficam opcionais.
 - Localização e acessibilidade avançada (só o básico que o UIKit já entrega).
 
@@ -56,7 +56,7 @@ Cenários que contam como fracasso mesmo com o app rodando:
 - Crash por `force unwrap` ou por JSON inesperado.
 - `ProductService` importando `UIKit`.
 - Lógica de rede dentro do `UIViewController`.
-- Storyboard remanescente quebrando o launch sem ninguém notar.
+- Storyboard remanescente **conectado** ao launch, o que sobrepõe a tela montada em código.
 
 ## 5. Restrições
 
@@ -73,9 +73,13 @@ Cenários que contam como fracasso mesmo com o app rodando:
   aplicado. Exibir preço atual + selo `-X%`. Não calcular preço "de" nesta versão.
 - O projeto já está configurado com `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`,
   `SWIFT_APPROACHABLE_CONCURRENCY = YES`, Swift 5 e deployment target 27.2.
-  Consequência para o plano: ver §6.1.- A remoção do storyboard toca três pontos: apagar `Main.storyboard`, remover
-  `UISceneStoryboardFile` do `Info.plist` e remover
-  `INFOPLIST_KEY_UIMainStoryboardFile = Main` do build settings. O
+  Consequência para o plano: ver §6.1.
+- Interface via **View Code**. O `Main.storyboard` **permanece no projeto** por decisão do
+  autor (para manter a porta aberta caso ele mude de ideia), mas é desconectado do launch:
+  `UISceneStoryboardFile` removido do `Info.plist` e `INFOPLIST_KEY_UIMainStoryboardFile`
+  limpo nas build settings. Se o autor mudar de ideia, basta restaurar os dois vínculos.
+  A entrada do app é montada em código no `SceneDelegate` — `UIWindow` +
+  `UINavigationController` com `ProductListViewController` como raiz. O
   `LaunchScreen.storyboard` **permanece**.
 
 ## 6. Abordagens consideradas
@@ -92,8 +96,7 @@ primeiro.
 **C — MVVM com ViewModel.** Separação melhor, porém camada extra sem retorno em duas
 telas e desvio do foco.
 
-Escolha do autor: **A**. Interface em **View Code** (sem storyboard), decisão tomada
-na conversa.
+Escolha do autor: **A**. Interface em **View Code** (sem storyboard), decisão fechada.
 
 ### 6.1 Modelo de concorrência
 
@@ -213,8 +216,9 @@ protocol ProductServiceProtocol {
 
 ## 11. Critérios de aceite
 
-- [ ] App abre direto na lista, sem storyboard (`Main.storyboard` removido do
-      target e `UISceneStoryboardFile` ajustado no `Info.plist`).
+- [ ] App abre direto na lista, com o storyboard desconectado do launch
+      (`UISceneStoryboardFile` removido do `Info.plist` e
+      `INFOPLIST_KEY_UIMainStoryboardFile` limpo nas build settings).
 - [ ] Lista exibe 30 produtos ordenados por desconto decrescente.
 - [ ] Célula reutilizada nunca mostra imagem de outro produto.
 - [ ] Toque abre o detalhe com os dados do produto correto.
@@ -226,7 +230,8 @@ protocol ProductServiceProtocol {
 
 ## 12. Ordem pedagógica sugerida
 
-1. Remover storyboard e montar a window + `UINavigationController` no `SceneDelegate`.
+1. Desconectar o storyboard do launch e montar a window + `UINavigationController` no
+   `SceneDelegate`.
 2. `Product` e `ProductsResponse`, com um JSON de exemplo para validar o decode.
 3. `ProductService` com `URLSession` + `Codable`.
 4. `ProductListViewController` com tabela simples (só título e preço).
