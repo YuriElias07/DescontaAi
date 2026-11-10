@@ -1,6 +1,6 @@
 //
 //  SceneDelegate.swift
-//  DescontaAí
+//  DescontaAi
 //
 //  Created by Yuri Elias on 10/11/26.
 //

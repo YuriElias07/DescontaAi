@@ -1,6 +1,6 @@
 //
 //  DescontaAi_Tests.swift
-//  DescontaAíTests
+//  DescontaAiTests
 //
 //  Created by Yuri Elias on 10/11/26.
 //
