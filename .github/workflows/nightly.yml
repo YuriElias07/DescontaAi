@@ -1,0 +1,60 @@
+name: Nightly
+
+# Roda a suíte completa uma vez por dia, mesmo sem push.
+# Serve como rede de segurança para regressões em branches longos.
+on:
+  schedule:
+    - cron: "0 5 * * *" # 05:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  SCHEME: DescontaAi
+  SIMULATOR_NAME: iPhone 17
+  SIMULATOR_OS: "27.2"
+  PROJECT: DescontaAi.xcodeproj
+
+jobs:
+  test:
+    name: Full Test Suite
+    runs-on: xcode-27
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_27.2.app
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/*.swift', '**/*.xcproj') }}
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-
+
+      - name: Run all tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=$SIMULATOR_OS" \
+            -derivedDataPath "$HOME/Library/Developer/Xcode/DerivedData" \
+            -resultBundlePath all-tests.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcbeautify
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-tests-xcresult
+          path: all-tests.xcresult
+          if-no-files-found: ignore

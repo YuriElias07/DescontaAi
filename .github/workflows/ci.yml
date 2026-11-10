@@ -1,0 +1,156 @@
+name: CI
+
+# Dispara a cada push e a cada PR. Também roda manualmente.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Cancela execuções antigas do mesmo branch/PR para não gastar minutos de macOS.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # O projeto tem deployment target iOS 27.2, então o CI precisa do Xcode 27
+  # (imagem preview xcode-27) e do simulador iOS 27.2.
+  SCHEME: DescontaAi
+  SIMULATOR_NAME: iPhone 17
+  SIMULATOR_OS: "27.2"
+  PROJECT: DescontaAi.xcodeproj
+
+jobs:
+  lint:
+    name: SwiftLint
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Lint (erros)
+        run: |
+          set -o pipefail
+          swiftlint lint --strict --reporter github-actions | tee swiftlint.log
+          # falha só se houver violações de severidade error
+          if grep -q ": error:" swiftlint.log; then
+            exit 1
+          fi
+
+  build:
+    name: Build
+    runs-on: xcode-27
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_27.2.app
+
+      - name: Show toolchain
+        run: |
+          xcodebuild -version
+          xcrun simctl list runtimes
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/*.swift', '**/*.xcproj') }}
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-
+
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=$SIMULATOR_OS" \
+            -derivedDataPath "$HOME/Library/Developer/Xcode/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcbeautify
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: xcode-27
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_27.2.app
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/*.swift', '**/*.xcproj') }}
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-
+
+      - name: Run unit tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=$SIMULATOR_OS" \
+            -derivedDataPath "$HOME/Library/Developer/Xcode/DerivedData" \
+            -only-testing:DescontaAiTests \
+            -resultBundlePath unit-tests.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcbeautify
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-tests-xcresult
+          path: unit-tests.xcresult
+          if-no-files-found: ignore
+
+  ui-tests:
+    name: UI Tests
+    runs-on: xcode-27
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_27.2.app
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/*.swift', '**/*.xcproj') }}
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-
+
+      - name: Run UI tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=$SIMULATOR_OS" \
+            -derivedDataPath "$HOME/Library/Developer/Xcode/DerivedData" \
+            -only-testing:DescontaAiUITests \
+            -resultBundlePath ui-tests.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcbeautify
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-tests-xcresult
+          path: ui-tests.xcresult
+          if-no-files-found: ignore

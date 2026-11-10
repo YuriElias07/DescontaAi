@@ -27,14 +27,14 @@
       ],
     },
     { "kind": "folder", "path": "DescontaAiTests", "target-membership": [ "DescontaAiTests" ] },
-    { "kind": "folder", "path": "DescontaAíUITests", "target-membership": [ "DescontaAíUITests" ] },
+    { "kind": "folder", "path": "DescontaAiUITests", "target-membership": [ "DescontaAiUITests" ] },
     {
       "kind": "group",
       "name": "Products",
       "children": [
         { "path": "<PRODUCTS>/DescontaAi.app", "id": "9CB5B0AA30A3439B0031ED23", "type": "wrapper.application", "index": false },
         { "path": "<PRODUCTS>/DescontaAiTests.xctest", "id": "9CB5B0C030A3439C0031ED23", "type": "wrapper.cfbundle", "index": false },
-        { "path": "<PRODUCTS>/DescontaAíUITests.xctest", "id": "9CB5B0CA30A3439C0031ED23", "type": "wrapper.cfbundle", "index": false },
+        { "path": "<PRODUCTS>/DescontaAiUITests.xctest", "id": "9CB5B0CA30A3439C0031ED23", "type": "wrapper.cfbundle", "index": false },
       ],
     },
   ],
@@ -110,9 +110,9 @@
         "TEST_HOST": "$(BUILT_PRODUCTS_DIR)/DescontaAi.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DescontaAi",
       },
     }, {
-      "name": "DescontaAíUITests",
+      "name": "DescontaAiUITests",
       "id": "9CB5B0C930A3439C0031ED23",
-      "product": "Products/DescontaAíUITests.xctest",
+      "product": "Products/DescontaAiUITests.xctest",
       "product-type": "bundle.ui-testing",
       "test-host-target": "DescontaAi",
       "dependencies": [

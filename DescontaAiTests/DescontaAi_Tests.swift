@@ -6,7 +6,7 @@
 //
 
 import Testing
-@testable import DescontaAi_
+@testable import DescontaAi
 
 struct DescontaAi_Tests {
 
