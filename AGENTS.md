@@ -12,3 +12,7 @@ Nesta primeira versão, o aplicativo utiliza a DummyJSON Products API como fonte
 - **Detalhes do produto:** apresentação de informações mais completas, incluindo descrição, categoria, preço e desconto.
 
 O projeto possui caráter educacional e está sendo desenvolvido de forma incremental, priorizando o aprendizado dos fundamentos do UIKit e as boas práticas de desenvolvimento iOS.
+
+## Regras de trabalho
+
+**Nunca faça commit.** Não rode `git commit`, `git add` + commit, `git push`, `git tag` nem qualquer operação que grave no histórico. O user revisa e commita por conta própria. Pode usar `git status`, `git diff` e `git log` para leitura. Ao terminar uma tarefa, apenas deixe os arquivos alterados e diga o que mudou.
