@@ -29,7 +29,7 @@ decisão de código.
 - Tela de detalhe com imagem, título, categoria, preço, desconto e descrição.
 - Navegação lista → detalhe por push, com botão de voltar nativo.
 - Estados de carregando, erro (com tentar de novo) e lista vazia.
-- Imagens baixadas de forma assíncrona, com cache em memória.
+- Imagens baixadas de forma assíncrona.
 - Código separado em Models, Services, Views e Controllers.
 
 ## 3. Não-objetivos (v1)
@@ -39,6 +39,8 @@ decisão de código.
 - Paginação / scroll infinito — usa o `limit` padrão da API (30 itens).
 - Pull to refresh.
 - Persistência offline.
+- **Cache de imagens** — a v1 só precisa funcionar; baixar de novo ao rolar é
+  aceitável. Fica para a v2 (ver §13).
 - Biblioteca externa de qualquer tipo (Kingfisher, Alamofire, SnapKit).
 - SwiftUI, storyboard, XIB.
 - Testes automatizados de UI; testes unitários ficam opcionais.
@@ -52,7 +54,6 @@ Cenários que contam como fracasso mesmo com o app rodando:
 - `retain cycle` entre controller e closure do service.
 - Imagem errada aparecendo numa célula reutilizada (race de reuso).
 - Crash por `force unwrap` ou por JSON inesperado.
-- Baixar a mesma imagem de novo a cada scroll.
 - `ProductService` importando `UIKit`.
 - Lógica de rede dentro do `UIViewController`.
 - Storyboard remanescente quebrando o launch sem ninguém notar.
@@ -122,7 +123,7 @@ DescontaAi/
     ProductsResponse.swift       struct ProductsResponse: Decodable
   Services/
     ProductService.swift         protocolo + implementação URLSession
-    ImageLoader.swift            download + cache em memória
+    ImageLoader.swift            download simples de imagem (sem cache na v1)
   Views/
     ProductCell.swift            UITableViewCell customizada
     DiscountBadge.swift          (opcional) view do selo "-X%"
@@ -169,8 +170,10 @@ protocol ProductServiceProtocol {
 
 - A implementação entrega o `completion` **na main thread**.
 - `ProductService` não conhece UIKit.
-- `ImageLoader` é um singleton com `NSCache<NSString, UIImage>`, entrega a imagem na
-  main thread e não faz cancelamento de requisição na v1.
+- `ImageLoader` apenas baixa e entrega a imagem na main thread. **Sem cache na v1:**
+  cada célula que aparece dispara a requisição da imagem. O guard de reuso (comparar a
+  URL antes de aplicar) permanece, porque sem ele a imagem errada aparece — isso é bug,
+  não polimento.
 
 ## 9. Comportamento das telas
 
@@ -213,7 +216,6 @@ protocol ProductServiceProtocol {
 - [ ] App abre direto na lista, sem storyboard (`Main.storyboard` removido do
       target e `UISceneStoryboardFile` ajustado no `Info.plist`).
 - [ ] Lista exibe 30 produtos ordenados por desconto decrescente.
-- [ ] Scroll contínuo não refaz download da mesma imagem.
 - [ ] Célula reutilizada nunca mostra imagem de outro produto.
 - [ ] Toque abre o detalhe com os dados do produto correto.
 - [ ] Voltar retorna à lista na mesma posição de scroll.
@@ -229,6 +231,16 @@ protocol ProductServiceProtocol {
 3. `ProductService` com `URLSession` + `Codable`.
 4. `ProductListViewController` com tabela simples (só título e preço).
 5. Célula customizada com Auto Layout.
-6. `ImageLoader` com cache e proteção contra reuso.
+6. `ImageLoader` sem cache, com proteção contra reuso.
 7. `ProductDetailViewController` e navegação por push.
 8. Estados de carregando/erro/vazio e polimento visual.
+
+## 13. Backlog (depois da v1)
+
+- Cache de imagens em memória (`NSCache`) e cancelamento de download ao reutilizar
+  célula.
+- Pull to refresh.
+- Paginação / scroll infinito.
+- Busca e filtro por categoria.
+- Concorrência estruturada (`async/await`, `@MainActor`).
+- Testes unitários do `ProductService` e do decode.

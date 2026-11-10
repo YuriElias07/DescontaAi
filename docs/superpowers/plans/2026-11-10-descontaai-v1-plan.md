@@ -111,16 +111,18 @@ Selo `-X%` com cor de ênfase quando o desconto for ≥ 15%.
 ## Fase 4 — Imagens
 
 ### T10. `ImageLoader`
-Singleton com `NSCache<NSString, UIImage>`, `URLSession` para baixar e entrega na main
-thread.
+Função que baixa a imagem por `URLSession` e entrega na main thread. **Sem cache** — a
+v1 só precisa funcionar; baixar de novo ao rolar é aceitável.
 
-**Pronto quando:** a segunda chamada para a mesma URL não gera requisição (confirmar no
-console do Xcode).
-**Conceitos:** `NSCache` vs. `Dictionary`, por que cache em memória e não em disco aqui.
+**Pronto quando:** as thumbnails aparecem na lista.
+**Conceitos:** `URLSession.shared.dataTask` retornando `Data`, `UIImage(data:)`, entrega
+na main thread.
+**Checagem:** por que transformar `Data` em `UIImage` fora da main thread não é problema,
+mas mexer no `UIImageView` é?
 
 ### T11. Integrar na célula com proteção de reuso
-Carregar a imagem no `cellForRowAt` ou na própria célula, guardando a URL atual: quando a
-resposta chegar, só aplica se a célula ainda estiver esperando aquela URL.
+Carregar a imagem na célula, guardando a URL atual: quando a resposta chegar, só aplica
+se a célula ainda estiver esperando aquela URL.
 
 **Pronto quando:** rolar rápido até o fim e voltar não mostra imagem trocada.
 **Checagem:** por que comparar a URL ao invés de simplesmente setar `image` no completion?
@@ -161,7 +163,6 @@ sem `UIKit`.
 |---|---|
 | Abre sem storyboard | T1, T2 |
 | 30 produtos ordenados | T5, T6 |
-| Scroll não rebaixa imagem | T10, T11 |
 | Célula reutilizada correta | T11 |
 | Toque abre detalhe correto | T13 |
 | Voltar preserva scroll | T13 |
