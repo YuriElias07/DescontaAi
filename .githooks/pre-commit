@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+#
+# Pre-commit hook: roda o SwiftLint nos arquivos Swift staged.
+# 1) corrige automaticamente o que dá para corrigir;
+# 2) se sobrar erro (não aviso), o commit é bloqueado.
+#
+set -uo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+if ! command -v swiftlint >/dev/null 2>&1; then
+  echo "⚠️  SwiftLint não encontrado — pulando o hook. Instale com: brew install swiftlint"
+  exit 0
+fi
+
+# Arquivos Swift que entram no commit.
+staged=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.swift$' || true)
+
+if [ -z "$staged" ]; then
+  exit 0
+fi
+
+echo "🔎 SwiftLint nos arquivos staged..."
+
+# Snapshot do conteúdo atual dos arquivos staged, para detectar o que o --fix mudou.
+snapshot_dir=$(mktemp -d)
+trap 'rm -rf "$snapshot_dir"' EXIT
+for f in $staged; do
+  mkdir -p "$snapshot_dir/$(dirname "$f")"
+  cp "$f" "$snapshot_dir/$f" 2>/dev/null || true
+done
+
+# 1) Auto-correção das regras autocorretíveis (whitespace, newline, etc).
+swiftlint --fix --quiet $staged >/dev/null 2>&1 || true
+
+# Se a auto-correção alterou os arquivos staged, eles voltam para o stage.
+# (apenas os que realmente mudaram — não toca em outras modificações do repo)
+fixed=""
+for f in $staged; do
+  if ! cmp -s "$snapshot_dir/$f" "$f" 2>/dev/null; then
+    fixed="$fixed $f"
+  fi
+done
+
+if [ -n "$fixed" ]; then
+  echo "$fixed" | xargs git add -- 2>/dev/null || true
+  echo "✨ Arquivos auto-corrigidos e re-adicionados ao stage."
+fi
+
+# 2) Validação final: só erros bloqueiam o commit (avisos apenas avisam).
+output=$(swiftlint lint --quiet $staged 2>&1)
+status=$?
+
+if [ $status -ne 0 ]; then
+  echo ""
+  echo "❌ SwiftLint encontrou erros. Corrija e tente novamente:"
+  echo "$output"
+  echo ""
+  echo "💡 Dica: ./scripts/lint.sh fix  (corrige automaticamente o possível)"
+  exit 1
+fi
+
+if [ -n "$output" ]; then
+  echo "$output"
+  echo "⚠️  Avisos do SwiftLint (não bloqueiam o commit)."
+fi
+
+exit 0

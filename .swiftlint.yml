@@ -1,0 +1,66 @@
+# Configuração do SwiftLint — o "ESLint" do mundo Swift.
+# https://realm.github.io/SwiftLint/
+
+# Só queremos lint nas pastas do app e dos targets de teste.
+included:
+  - DescontaAi
+  - DescontaAiTests
+  - DescontaAiUITests
+
+excluded:
+  - .build
+  - Carthage
+  - Pods
+  - DerivedData
+  - "*.generated.swift"
+
+# Regras que ligamos por padrão (opt-in). Escolhidas por serem baratas,
+# automáticas e de alto valor: código morto e expressões redundantes.
+opt_in_rules:
+  - empty_count
+  - redundant_nil_coalescing
+  - toggle_bool
+
+# Regras desligadas de propósito:
+disabled_rules:
+  - trailing_whitespace # tratado pelo formatador, não aqui
+  - unneeded_override   # projeto educativo: o viewDidLoad do template é ponto de partida
+
+# Regras que só rodam no `swiftlint analyze`.
+analyzer_rules:
+  - unused_import
+
+# Limites de cada regra.
+line_length:
+  warning: 120
+  error: 200
+  ignores_urls: true
+  ignores_interpolated_strings: false
+
+file_length:
+  warning: 400
+  error: 1000
+
+type_body_length:
+  warning: 250
+  error: 400
+
+function_body_length:
+  warning: 50
+  error: 80
+
+type_name:
+  min_length: 3
+  max_length: 40
+  allowed_symbols:
+    - "DescontaAi_Tests"
+    - "DescontaAi_UITests"
+
+identifier_name:
+  min_length: 2
+  max_length: 50
+  excluded:
+    - id
+    - to
+    - up
+    - on
