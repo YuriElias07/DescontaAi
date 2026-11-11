@@ -6,14 +6,26 @@
 //
 
 import Testing
+import UIKit
+
 @testable import DescontaAi
 
 struct DescontaAi_Tests {
 
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-        // Swift Testing Documentation
-        // https://developer.apple.com/documentation/testing
+    @Test func decodesProductsResponse() throws {
+        let jsonString = """
+        { "products": [ { "id": 1, "title": "Fone", "price": 99.9,
+          "discountPercentage": 12.5, "thumbnail": "x", "description": "d",
+          "category": "eletronics" } ] }
+        """
+
+        let data = Data(jsonString.utf8)
+        let response = try JSONDecoder().decode(ProductsResponse.self, from: data)
+
+        #expect(response.products.count == 1)
+        #expect(response.products.first?.title == "Fone")
+        #expect(response.products.first?.price == 99.9)
+        #expect(response.products.first?.discountPercentage == 12.5)
     }
 
 }
