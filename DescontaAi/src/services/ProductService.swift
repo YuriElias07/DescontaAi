@@ -7,29 +7,39 @@
 
 import Foundation
 
+/// protocolo de contrato para ter esta function e retornar valores reais
 protocol ProductServiceProtocol {
     func fetchProducts(completion: @escaping (Result<[Product], Error>) -> Void)
 }
 
 final class ProductService: ProductServiceProtocol {
 
+    /// somente o que são hardware.
+    private let hardwareCategories: Set<String> = [
+        "laptops",
+        "smartphones",
+        "tablets",
+        "mobile-accessories"
+    ]
+
     func fetchProducts(completion: @escaping (Result<[Product], Error>) -> Void) {
-        guard let url = URL(string: "https://dummyjson.com/products") else { return }
+        // limit=0 traz todos os 194, sem isso a API devolve so 30
+        guard let url = URL(string: "https://dummyjson.com/products?limit=0") else { return }
 
         URLSession.shared.dataTask(with: url) { data, _, error in
-            // deu erro de rede?
             if let error {
                 DispatchQueue.main.async { completion(.failure(error)) }
                 return
             }
 
-            // veio corpo na resposta?
             guard let data else { return }
 
-            // tenta virar [Product]
             do {
                 let response = try JSONDecoder().decode(ProductsResponse.self, from: data)
-                DispatchQueue.main.async { completion(.success(response.products)) }
+                let hardware = response.products.filter {
+                    self.hardwareCategories.contains($0.category)
+                }
+                DispatchQueue.main.async { completion(.success(hardware)) }
             } catch {
                 DispatchQueue.main.async { completion(.failure(error)) }
             }
