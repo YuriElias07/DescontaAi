@@ -8,7 +8,18 @@
 import UIKit
 
 final class ProductListViewController: UIViewController {
-
+/// estados da tela
+    enum ViewState {
+        case loading
+        case loaded
+        case error(message: String)
+        case empty
+    }
+    
+    let activityIndicator = UIActivityIndicatorView(style: .large)
+    let errorLabel = UILabel()
+    let retryButton = UIButton(type: .system)
+    
     private let service: ProductServiceProtocol = ProductService()
     private var products: [Product] = []
 
@@ -17,10 +28,46 @@ final class ProductListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "DescontaAí"
+        title = "DescontaAi"
         view.backgroundColor = .systemBackground
         setupTableView()
         loadProducts()
+    }
+    /// toda vez que muda a state, automaticamente deve chamar o updateUI()
+    private var state: ViewState = .loading {
+         didSet { updateUI() }
+     }
+    
+    /// usando o enum de estados possiveis da tela
+    private func updateUI() {
+        switch state {
+            
+        case .loading:
+            activityIndicator.startAnimating()
+            tableView.isHidden = true
+            errorLabel.isHidden = true
+            retryButton.isHidden = true
+    
+        case .loaded:
+            activityIndicator.stopAnimating()
+            tableView.isHidden = false
+            errorLabel.isHidden = true
+            retryButton.isHidden = true
+    
+        case .error(let message):
+            activityIndicator.stopAnimating()
+            tableView.isHidden = true
+            errorLabel.isHidden = false
+            errorLabel.text = message
+            retryButton.isHidden = false
+    
+        case .empty:
+            activityIndicator.stopAnimating()
+            tableView.isHidden = true
+            errorLabel.isHidden = false
+            errorLabel.text = "Nenhum produto encontrado"
+            retryButton.isHidden = true
+        }
     }
 
     private func setupTableView() {
@@ -42,7 +89,7 @@ final class ProductListViewController: UIViewController {
 
             switch result {
             case .success(let products):
-                self.products = products
+                self.products = products.sorted(by: { $0.discountPercentage > $1.discountPercentage })
                 self.tableView.reloadData()
             case .failure(let error):
                 print(error)
