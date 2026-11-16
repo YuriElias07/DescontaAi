@@ -120,7 +120,7 @@ final class ProductListViewController: UIViewController {
             case .success(let products):
                 self.products = products.sorted(by: { $0.discountPercentage > $1.discountPercentage })
                 self.state = .loaded
-            case .failure(let error):
+            case .failure:
                 self.state = .error(message: "Error ao carregar produtos.")
             }
         }
