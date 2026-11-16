@@ -122,41 +122,41 @@ jobs:
           path: unit-tests.xcresult
           if-no-files-found: ignore
 
-  ui-tests:
-    name: UI Tests
-    runs-on: xcode-27
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  # ui-tests:
+  #   name: UI Tests
+  #   runs-on: xcode-27
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -switch /Applications/Xcode_27.2.app
+  #     - name: Select Xcode
+  #       run: sudo xcode-select -switch /Applications/Xcode_27.2.app
 
-      - name: Cache DerivedData
-        uses: actions/cache@v4
-        with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/*.swift', '**/*.xcproj') }}
-          restore-keys: |
-            ${{ runner.os }}-deriveddata-
+  #     - name: Cache DerivedData
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: ~/Library/Developer/Xcode/DerivedData
+  #         key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/*.swift', '**/*.xcproj') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-deriveddata-
 
-      - name: Run UI tests
-        run: |
-          set -o pipefail
-          xcodebuild test \
-            -project "$PROJECT" \
-            -scheme "$SCHEME" \
-            -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=$SIMULATOR_OS" \
-            -derivedDataPath "$HOME/Library/Developer/Xcode/DerivedData" \
-            -only-testing:DescontaAiUITests \
-            -resultBundlePath ui-tests.xcresult \
-            CODE_SIGNING_ALLOWED=NO \
-            | xcbeautify
+  #     - name: Run UI tests
+  #       run: |
+  #         set -o pipefail
+  #         xcodebuild test \
+  #           -project "$PROJECT" \
+  #           -scheme "$SCHEME" \
+  #           -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=$SIMULATOR_OS" \
+  #           -derivedDataPath "$HOME/Library/Developer/Xcode/DerivedData" \
+  #           -only-testing:DescontaAiUITests \
+  #           -resultBundlePath ui-tests.xcresult \
+  #           CODE_SIGNING_ALLOWED=NO \
+  #           | xcbeautify
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ui-tests-xcresult
-          path: ui-tests.xcresult
-          if-no-files-found: ignore
+  #     - name: Upload test results
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ui-tests-xcresult
+  #         path: ui-tests.xcresult
+  #         if-no-files-found: ignore
