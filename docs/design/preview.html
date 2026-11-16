@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>DescontaAí — preview HIG</title>
+<style>
+  :root {
+    --label: #000;
+    --secondary-label: rgba(60,60,67,.6);
+    --tertiary-label: rgba(60,60,67,.3);
+    --bg: #fff;
+    --separator: rgba(60,60,67,.29);
+    --blue: #007AFF;
+    --orange: #FF9500;
+    --fill: rgba(118,118,128,.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    background: #f2f2f7; padding: 40px; display: flex; gap: 48px;
+    align-items: flex-start; justify-content: center; min-height: 100vh;
+  }
+  .frame { width: 393px; height: 852px; background: var(--bg); border-radius: 44px;
+    overflow: hidden; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,.18);
+    display: flex; flex-direction: column; }
+  .status { height: 54px; display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 28px 8px; font-size: 15px; font-weight: 600; }
+  .status .icons { display: flex; gap: 5px; align-items: center; }
+  .notch { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    width: 118px; height: 34px; background: #000; border-radius: 20px; }
+  .nav { height: 44px; display: flex; align-items: center; justify-content: center;
+    position: relative; font-size: 17px; font-weight: 600; }
+  .nav .back { position: absolute; left: 16px; color: var(--blue); font-size: 17px;
+    display: flex; align-items: center; gap: 4px; }
+  .large-title { font-size: 34px; font-weight: 700; letter-spacing: .37px;
+    padding: 8px 16px 12px; }
+  .list { flex: 1; overflow: hidden; }
+  .row { height: 96px; display: flex; align-items: center; gap: 12px; padding: 0 16px;
+    position: relative; }
+  .row + .row::before { content: ""; position: absolute; top: 0; left: 92px; right: 0;
+    height: 1px; background: var(--separator); }
+  .thumb { width: 64px; height: 64px; border-radius: 8px; background: var(--fill);
+    flex: 0 0 64px; display: flex; align-items: center; justify-content: center;
+    color: var(--tertiary-label); font-size: 26px; }
+  .info { flex: 1; min-width: 0; }
+  .title { font-size: 17px; line-height: 22px; font-weight: 400; color: var(--label);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; }
+  .price { font-size: 15px; color: var(--secondary-label); margin-top: 4px; }
+  .price strong { font-size: 17px; color: var(--label); font-weight: 600; }
+  .badge { font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: 6px;
+    white-space: nowrap; }
+  .badge.hot { background: rgba(255,149,0,.15); color: var(--orange); }
+  .badge.cold { background: var(--fill); color: var(--secondary-label); }
+  .home-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 139px; height: 5px; background: #000; border-radius: 3px; opacity: .85; }
+  /* detalhe */
+  .scroll { flex: 1; overflow: hidden; }
+  .hero { width: 393px; height: 393px; background: var(--fill); display: flex;
+    align-items: center; justify-content: center; color: var(--tertiary-label);
+    font-size: 64px; }
+  .body-content { padding: 20px 16px 0; }
+  .category { font-size: 13px; text-transform: uppercase; letter-spacing: .5px;
+    color: var(--secondary-label); }
+  .detail-title { font-size: 22px; font-weight: 700; line-height: 28px; margin-top: 6px; }
+  .price-line { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .price-line .big { font-size: 28px; font-weight: 700; }
+  .description { font-size: 17px; line-height: 24px; color: var(--label);
+    margin-top: 20px; }
+  .caption { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: var(--secondary-label); }
+</style>
+</head>
+<body>
+
+<!-- ============ TELA 1: LISTA ============ -->
+<div class="frame">
+  <div class="notch"></div>
+  <div class="status">
+    <span>9:41</span>
+    <span class="icons">▮▮▮ ⌾ ▰</span>
+  </div>
+  <div class="large-title">DescontaAí</div>
+  <div class="list">
+    <div class="row">
+      <div class="thumb">▣</div>
+      <div class="info">
+        <div class="title">Apple MacBook Pro 14 Inch Space Grey</div>
+        <div class="price"><strong>US$ 1.999,99</strong></div>
+      </div>
+      <div class="badge hot">-25%</div>
+    </div>
+    <div class="row">
+      <div class="thumb">▣</div>
+      <div class="info">
+        <div class="title">Asus Zenbook Pro Dual Screen Laptop</div>
+        <div class="price"><strong>US$ 1.799,99</strong></div>
+      </div>
+      <div class="badge hot">-18%</div>
+    </div>
+    <div class="row">
+      <div class="thumb">▣</div>
+      <div class="info">
+        <div class="title">Huawei Matebook X Pro</div>
+        <div class="price"><strong>US$ 1.399,99</strong></div>
+      </div>
+      <div class="badge hot">-16%</div>
+    </div>
+    <div class="row">
+      <div class="thumb">▣</div>
+      <div class="info">
+        <div class="title">Apple AirPods Max Silver</div>
+        <div class="price"><strong>US$ 549,99</strong></div>
+      </div>
+      <div class="badge hot">-15%</div>
+    </div>
+    <div class="row">
+      <div class="thumb">▣</div>
+      <div class="info">
+        <div class="title">Apple Airpods</div>
+        <div class="price"><strong>US$ 129,99</strong></div>
+      </div>
+      <div class="badge cold">-9%</div>
+    </div>
+    <div class="row">
+      <div class="thumb">▣</div>
+      <div class="info">
+        <div class="title">Amazon Echo Plus</div>
+        <div class="price"><strong>US$ 99,99</strong></div>
+      </div>
+      <div class="badge cold">-7%</div>
+    </div>
+    <div class="row">
+      <div class="thumb">▣</div>
+      <div class="info">
+        <div class="title">Apple iPhone Charger</div>
+        <div class="price"><strong>US$ 19,99</strong></div>
+      </div>
+      <div class="badge cold">-5%</div>
+    </div>
+  </div>
+  <div class="home-indicator"></div>
+</div>
+
+<!-- ============ TELA 2: DETALHE ============ -->
+<div class="frame">
+  <div class="notch"></div>
+  <div class="status">
+    <span>9:41</span>
+    <span class="icons">▮▮▮ ⌾ ▰</span>
+  </div>
+  <div class="nav">
+    <span class="back">‹ DescontaAí</span>
+    Detalhe
+  </div>
+  <div class="scroll">
+    <div class="hero">▣</div>
+    <div class="body-content">
+      <div class="category">Laptops</div>
+      <div class="detail-title">Apple MacBook Pro 14 Inch Space Grey</div>
+      <div class="price-line">
+        <span class="big">US$ 1.999,99</span>
+        <span class="badge hot">-25%</span>
+      </div>
+      <div class="description">
+        The MacBook Pro 14 Inch in Space Grey is a powerful and sleek laptop,
+        featuring top-of-the-line specifications designed to handle even the most
+        demanding tasks.
+      </div>
+    </div>
+  </div>
+  <div class="home-indicator"></div>
+</div>
+
+</body>
+</html>
