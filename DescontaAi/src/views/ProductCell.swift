@@ -6,35 +6,13 @@
 //
 import UIKit
 
-class ProductCell: UITableViewCell {
-    let thumbnailImageView = UIImageView()
-    let titleLabel = UILabel()
-    let priceLabel = UILabel()
-    let discountLabel = UILabel()
+final class ProductCell: UITableViewCell {
+    private let thumbnailImageView = UIImageView()
+    private let titleLabel = UILabel()
+    private let priceLabel = UILabel()
+    private let discountLabel = UILabel()
     
     private var currentImageURL: String?
-    private var currentImageURL: String?
-
-    func configure(with product: Product) {
-        titleLabel.text = product.title
-        priceLabel.text = "R$ \(String(format: "%.2f", product.price))"
-        discountLabel.text = "-\(Int(product.discountPercentage))%"
-        discountLabel.backgroundColor =
-            product.discountPercentage >= 15 ? .systemRed : .systemOrange
-
-        currentImageURL = product.thumbnail
-
-        ImageLoader.loadImage(from: product.thumbnail) { [weak self] image in
-            guard self?.currentImageURL == product.thumbnail else { return }
-            self?.thumbnailImageView.image = image
-        }
-    }
-    
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        thumbnailImageView.image = nil
-        currentImageURL = nil
-    }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -49,6 +27,11 @@ class ProductCell: UITableViewCell {
         priceLabel.translatesAutoresizingMaskIntoConstraints = false
         discountLabel.translatesAutoresizingMaskIntoConstraints = false
 
+        configureViews()
+        setupConstraints()
+    }
+    
+    private func configureViews() {
         thumbnailImageView.contentMode = .scaleAspectFill
         thumbnailImageView.clipsToBounds = true
         thumbnailImageView.layer.cornerRadius = 8
@@ -66,7 +49,9 @@ class ProductCell: UITableViewCell {
         discountLabel.layer.cornerRadius = 4
         discountLabel.clipsToBounds = true
         discountLabel.textAlignment = .center
-
+    }
+    
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             thumbnailImageView.leadingAnchor.constraint(
                 equalTo: contentView.leadingAnchor,

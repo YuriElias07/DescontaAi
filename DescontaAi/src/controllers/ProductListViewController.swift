@@ -16,9 +16,9 @@ final class ProductListViewController: UIViewController {
         case empty
     }
 
-    let activityIndicator = UIActivityIndicatorView(style: .large)
-    let errorLabel = UILabel()
-    let retryButton = UIButton(type: .system)
+    private let activityIndicator = UIActivityIndicatorView(style: .large)
+    private let errorLabel = UILabel()
+    private let retryButton = UIButton(type: .system)
 
     private let service: ProductServiceProtocol = ProductService()
     private var products: [Product] = []
@@ -74,6 +74,7 @@ final class ProductListViewController: UIViewController {
     private func setupTableView() {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.dataSource = self
+        tableView.delegate = self
         view.addSubview(tableView)
 
         // Adiciona as outras views
@@ -171,5 +172,16 @@ extension ProductListViewController: UITableViewDataSource {
         let product = products[indexPath.row]
         cell.configure(with: product)
         return cell
+    }
+}
+
+extension ProductListViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        let product = products[indexPath.row]
+        let detailVC = ProductDetailViewController(product: product)
+        navigationController?.pushViewController(detailVC, animated: true)
     }
 }
