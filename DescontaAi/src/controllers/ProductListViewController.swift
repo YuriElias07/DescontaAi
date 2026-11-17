@@ -146,6 +146,7 @@ extension ProductListViewController: UITableViewDataSource {
         cell.titleLabel.text = product.title
         cell.priceLabel.text = "R$ \(String(format: "%.2f", product.price))"
         cell.discountLabel.text = "-\(Int(product.discountPercentage))%"
+        cell.discountLabel.backgroundColor = product.discountPercentage >= 15 ? .systemRed : .systemOrange
         
         return cell
     }
