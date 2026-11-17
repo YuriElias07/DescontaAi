@@ -18,6 +18,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     ) {
         guard let windowScene = scene as? UIWindowScene else { return }
         window = UIWindow(windowScene: windowScene)
+        window?.tintColor = DesignSystem.blue
         window?.rootViewController = UINavigationController(rootViewController: ProductListViewController())
         window?.makeKeyAndVisible()
     }

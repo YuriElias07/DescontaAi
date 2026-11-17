@@ -8,24 +8,23 @@
 import UIKit
 
 final class WishlistViewController: UIViewController {
+
     private let tableView = UITableView()
     private let toolbar = UIToolbar()
     private let totalLabel = UILabel()
-    private let emptyLabel = UILabel()
-    
+    private var emptyStateView: EmptyStateView?
     private var products: [Product] = []
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Carrinho"
-        view.backgroundColor = .systemBackground
-        
+
+        title = "Sacola"
+        view.backgroundColor = DesignSystem.background
         setupNavigationBar()
-        setupTableView()
         setupToolbar()
-        setupEmptyLabel()
+        setupTableView()
         loadProducts()
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(wishlistDidChange),
@@ -33,145 +32,172 @@ final class WishlistViewController: UIViewController {
             object: nil
         )
     }
-    
+
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-    
+
+    // MARK: - Layout
+
     private func setupNavigationBar() {
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
+        let close = UIBarButtonItem(
             barButtonSystemItem: .close,
             target: self,
             action: #selector(closeTapped)
         )
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
+        close.hidesSharedBackground = true
+
+        let clear = UIBarButtonItem(
             title: "Limpar",
             style: .plain,
             target: self,
             action: #selector(clearTapped)
         )
+        clear.hidesSharedBackground = true
+
+        navigationItem.leftBarButtonItem = close
+        navigationItem.rightBarButtonItem = clear
     }
-    
+
     private func setupTableView() {
-        view.addSubview(tableView)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.backgroundColor = DesignSystem.background
+        tableView.separatorStyle = .none
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(WishlistCell.self, forCellReuseIdentifier: "WishlistCell")
-        tableView.rowHeight = 84
-    }
-    
-    private func setupToolbar() {
-        view.addSubview(toolbar)
-        toolbar.translatesAutoresizingMaskIntoConstraints = false
-        
-        totalLabel.font = .systemFont(ofSize: 16, weight: .semibold)
-        totalLabel.textAlignment = .center
-        
-        let labelItem = UIBarButtonItem(customView: totalLabel)
-        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        toolbar.items = [flexSpace, labelItem, flexSpace]
-        
+        tableView.register(WishlistCell.self, forCellReuseIdentifier: WishlistCell.identifier)
+        tableView.rowHeight = 92
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(tableView)
+
         NSLayoutConstraint.activate([
-            toolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            toolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            toolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: toolbar.topAnchor)
         ])
     }
-    
-    private func setupEmptyLabel() {
-        view.addSubview(emptyLabel)
-        emptyLabel.translatesAutoresizingMaskIntoConstraints = false
-        emptyLabel.text = "Carrinho vazio"
-        emptyLabel.font = .systemFont(ofSize: 18, weight: .medium)
-        emptyLabel.textColor = .systemGray
-        emptyLabel.textAlignment = .center
-        emptyLabel.isHidden = true
-        
+
+    private func setupToolbar() {
+        totalLabel.font = DesignSystem.number(20)
+        totalLabel.textColor = DesignSystem.ink
+        totalLabel.textAlignment = .center
+
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let totalItem = UIBarButtonItem(customView: totalLabel)
+        totalItem.hidesSharedBackground = true
+        toolbar.items = [flexSpace, totalItem, flexSpace]
+        toolbar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(toolbar)
+
         NSLayoutConstraint.activate([
-            emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            toolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            toolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            toolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
-    
+
+    // MARK: - Dados
+
     private func loadProducts() {
         products = WishlistService.shared.items
-        updateUI()
-    }
-    
-    private func updateUI() {
         tableView.reloadData()
-        updateTotal()
-        
+
+        totalLabel.text = "Total: \(DesignSystem.price(WishlistService.shared.total))"
+
         let isEmpty = products.isEmpty
-        emptyLabel.isHidden = !isEmpty
         tableView.isHidden = isEmpty
         navigationItem.rightBarButtonItem?.isEnabled = !isEmpty
+
+        if isEmpty {
+            showEmptyState()
+        } else {
+            emptyStateView?.removeFromSuperview()
+            emptyStateView = nil
+        }
     }
-    
-    private func updateTotal() {
-        let total = WishlistService.shared.total
-        totalLabel.text = "Total: R$ \(String(format: "%.2f", total))"
+
+    private func showEmptyState() {
+        guard emptyStateView == nil else { return }
+
+        let emptyView = EmptyStateView(
+            icon: "bag",
+            title: "Sua sacola está vazia",
+            message: "Toque na sacola de um produto para guardar a oferta aqui."
+        )
+        emptyView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(emptyView)
+
+        NSLayoutConstraint.activate([
+            emptyView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            emptyView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            emptyView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            emptyView.bottomAnchor.constraint(equalTo: toolbar.topAnchor)
+        ])
+
+        emptyStateView = emptyView
     }
-    
+
+    // MARK: - Ações
+
     @objc private func closeTapped() {
         dismiss(animated: true)
     }
-    
+
     @objc private func clearTapped() {
         let alert = UIAlertController(
-            title: "Limpar carrinho",
+            title: "Limpar sacola",
             message: "Deseja remover todos os itens?",
             preferredStyle: .alert
         )
-        
         alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
         alert.addAction(UIAlertAction(title: "Limpar", style: .destructive) { _ in
             WishlistService.shared.clear()
         })
-        
         present(alert, animated: true)
     }
-    
+
     @objc private func wishlistDidChange() {
         loadProducts()
     }
 }
 
+// MARK: - UITableViewDataSource
+
 extension WishlistViewController: UITableViewDataSource {
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         products.count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(
-            withIdentifier: "WishlistCell",
+            withIdentifier: WishlistCell.identifier,
             for: indexPath
-        ) as? WishlistCell else {
-            return UITableViewCell()
-        }
-        
-        let product = products[indexPath.row]
-        cell.configure(with: product)
+        ) as? WishlistCell else { return UITableViewCell() }
+
+        cell.configure(with: products[indexPath.row])
         return cell
     }
 }
 
+// MARK: - UITableViewDelegate
+
 extension WishlistViewController: UITableViewDelegate {
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        navigationController?.pushViewController(
+            ProductDetailViewController(product: products[indexPath.row]),
+            animated: true
+        )
+    }
+
     func tableView(
         _ tableView: UITableView,
         commit editingStyle: UITableViewCell.EditingStyle,
         forRowAt indexPath: IndexPath
     ) {
         if editingStyle == .delete {
-            let product = products[indexPath.row]
-            WishlistService.shared.remove(product)
+            WishlistService.shared.remove(products[indexPath.row])
         }
     }
 }

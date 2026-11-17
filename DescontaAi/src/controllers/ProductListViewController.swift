@@ -8,32 +8,32 @@
 import UIKit
 
 final class ProductListViewController: UIViewController {
-    /// estados da tela
+
     enum ViewState {
         case loading
         case loaded
-        case error(message: String)
+        case error
         case empty
     }
-
-    private let activityIndicator = UIActivityIndicatorView(style: .large)
-    private let errorLabel = UILabel()
-    private let retryButton = UIButton(type: .system)
 
     private let service: ProductServiceProtocol = ProductService()
     private var products: [Product] = []
 
-    private let tableView = UITableView()
+    private let tableView = UITableView(frame: .zero, style: .plain)
+    private let activityIndicator = UIActivityIndicatorView(style: .medium)
+    private let messageLabel = UILabel()
+    private let retryButton = UIButton(type: .system)
+    private let cartButton = UIButton(type: .system)
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "DescontaAi"
-        view.backgroundColor = .systemBackground
-        setupNavigationBar()
+        view.backgroundColor = DesignSystem.background
+        setupHeader()
         setupTableView()
+        setupLoadingViews()
         loadProducts()
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(wishlistDidChange),
@@ -41,185 +41,245 @@ final class ProductListViewController: UIViewController {
             object: nil
         )
     }
-    
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+    }
+
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-    /// toda vez que muda a state, automaticamente deve chamar o updateUI()
+
     private var state: ViewState = .loading {
         didSet { updateUI() }
     }
 
-    /// usando o enum de estados possiveis da tela
-    private func updateUI() {
-        switch state {
+    // MARK: - Layout
 
-        case .loading:
-            activityIndicator.startAnimating()
-            tableView.isHidden = true
-            errorLabel.isHidden = true
-            retryButton.isHidden = true
+    private func setupHeader() {
+        let header = UIView()
+        header.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(header)
 
-        case .loaded:
-            activityIndicator.stopAnimating()
-            tableView.isHidden = false
-            errorLabel.isHidden = true
-            retryButton.isHidden = true
-            tableView.reloadData()
+        let titleLabel = UILabel()
+        titleLabel.text = "DescontaAí"
+        titleLabel.font = DesignSystem.number(25)
+        titleLabel.textColor = DesignSystem.ink
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        header.addSubview(titleLabel)
 
-        case .error(let message):
-            activityIndicator.stopAnimating()
-            tableView.isHidden = true
-            errorLabel.isHidden = false
-            errorLabel.text = message
-            retryButton.isHidden = false
+        cartButton.setImage(UIImage(systemName: "bag.fill"), for: .normal)
+        cartButton.tintColor = DesignSystem.ink
+        cartButton.backgroundColor = DesignSystem.yellow
+        cartButton.layer.cornerRadius = 22
+        cartButton.addTarget(self, action: #selector(cartTapped), for: .touchUpInside)
+        cartButton.translatesAutoresizingMaskIntoConstraints = false
+        header.addSubview(cartButton)
 
-        case .empty:
-            activityIndicator.stopAnimating()
-            tableView.isHidden = true
-            errorLabel.isHidden = false
-            errorLabel.text = "Nenhum produto encontrado"
-            retryButton.isHidden = true
-        }
-    }
+        NSLayoutConstraint.activate([
+            header.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            header.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            header.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            header.heightAnchor.constraint(equalToConstant: 60),
 
-    private func setupNavigationBar() {
-        let cartButton = UIBarButtonItem(
-            image: UIImage(systemName: "cart"),
-            style: .plain,
-            target: self,
-            action: #selector(cartTapped)
-        )
-        navigationItem.rightBarButtonItem = cartButton
-        updateCartBadge()
-    }
-    
-    private func updateCartBadge() {
-        let count = WishlistService.shared.items.count
-        navigationItem.rightBarButtonItem?.image = count > 0
-            ? UIImage(systemName: "cart.fill.badge.plus")
-            : UIImage(systemName: "cart")
-    }
-    
-    @objc private func cartTapped() {
-        let wishlistVC = WishlistViewController()
-        let navController = UINavigationController(rootViewController: wishlistVC)
-        present(navController, animated: true)
-    }
-    
-    @objc private func wishlistDidChange() {
-        updateCartBadge()
+            titleLabel.leadingAnchor.constraint(equalTo: header.leadingAnchor, constant: DesignSystem.margin),
+            titleLabel.centerYAnchor.constraint(equalTo: header.centerYAnchor),
+
+            cartButton.trailingAnchor.constraint(equalTo: header.trailingAnchor, constant: -DesignSystem.margin),
+            cartButton.centerYAnchor.constraint(equalTo: header.centerYAnchor),
+            cartButton.widthAnchor.constraint(equalToConstant: 44),
+            cartButton.heightAnchor.constraint(equalToConstant: 44)
+        ])
     }
 
     private func setupTableView() {
-        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.backgroundColor = DesignSystem.background
+        tableView.separatorStyle = .none
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 100
+        tableView.register(HeroDealCell.self, forCellReuseIdentifier: HeroDealCell.identifier)
+        tableView.register(ProductCell.self, forCellReuseIdentifier: ProductCell.identifier)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tableView)
 
-        // Adiciona as outras views
-        view.addSubview(activityIndicator)
-        view.addSubview(errorLabel)
-        view.addSubview(retryButton)
-
-        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-        errorLabel.translatesAutoresizingMaskIntoConstraints = false
-        retryButton.translatesAutoresizingMaskIntoConstraints = false
-
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.topAnchor
-            ),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 60),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-
-            // Centraliza o spinner
-            activityIndicator.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor
-            ),
-            activityIndicator.centerYAnchor.constraint(
-                equalTo: view.centerYAnchor
-            ),
-
-            // Centraliza a label de erro
-            errorLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            errorLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-
-            // Botão abaixo da label
-            retryButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            retryButton.topAnchor.constraint(
-                equalTo: errorLabel.bottomAnchor,
-                constant: 12
-            )
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-
-        tableView.register(
-            ProductCell.self,
-            forCellReuseIdentifier: "ProductCell"
-        )
-        tableView.rowHeight = 84
-        tableView.separatorInset = UIEdgeInsets(
-            top: 0,
-            left: 84,
-            bottom: 0,
-            right: 0
-        )
-
-        retryButton.setTitle("Tentar Novamente", for: .normal)
-        retryButton.addTarget(
-            self,
-            action: #selector(loadProducts),
-            for: .touchUpInside
-        )
     }
 
+    private func setupLoadingViews() {
+        activityIndicator.color = DesignSystem.blue
+
+        messageLabel.font = DesignSystem.text(15)
+        messageLabel.textColor = DesignSystem.gray
+        messageLabel.textAlignment = .center
+        messageLabel.numberOfLines = 0
+
+        retryButton.setTitle("Tentar de novo", for: .normal)
+        retryButton.setTitleColor(DesignSystem.blue, for: .normal)
+        retryButton.titleLabel?.font = DesignSystem.text(15, weight: .semibold)
+        retryButton.addTarget(self, action: #selector(loadProducts), for: .touchUpInside)
+
+        let views = [activityIndicator, messageLabel, retryButton]
+        views.forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
+
+        NSLayoutConstraint.activate([
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+
+            messageLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            messageLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            messageLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 40),
+            messageLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -40),
+
+            retryButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            retryButton.topAnchor.constraint(equalTo: messageLabel.bottomAnchor, constant: 8)
+        ])
+    }
+
+    // MARK: - Estados
+
+    private func updateUI() {
+        activityIndicator.stopAnimating()
+        tableVisible(false)
+        messageLabel.isHidden = true
+        retryButton.isHidden = true
+
+        switch state {
+        case .loading:
+            activityIndicator.startAnimating()
+        case .loaded:
+            tableVisible(true)
+        case .error:
+            messageLabel.text = "Não deu para carregar as ofertas.\nConfira sua conexão."
+            messageLabel.isHidden = false
+            retryButton.isHidden = false
+        case .empty:
+            messageLabel.text = "Nenhuma oferta por aqui agora."
+            messageLabel.isHidden = false
+        }
+    }
+
+    private func tableVisible(_ visible: Bool) {
+        tableView.isHidden = !visible
+        if visible {
+            tableView.reloadData()
+        }
+    }
+
+    // MARK: - Sacola
+
+    @objc private func cartTapped() {
+        let wishlistVC = WishlistViewController()
+        present(UINavigationController(rootViewController: wishlistVC), animated: true)
+    }
+
+    @objc private func wishlistDidChange() {
+        updateCartIcon()
+    }
+
+    private func updateCartIcon() {
+        let name = WishlistService.shared.items.isEmpty ? "bag" : "bag.fill"
+        cartButton.setImage(UIImage(systemName: name), for: .normal)
+    }
+
+    // MARK: - Dados
+
     @objc private func loadProducts() {
+        state = .loading
+
         service.fetchProducts { [weak self] result in
             guard let self else { return }
 
             switch result {
+            case .success(let products) where products.isEmpty:
+                self.products = []
+                self.state = .empty
             case .success(let products):
-                self.products = products.sorted(by: {
-                    $0.discountPercentage > $1.discountPercentage
-                })
+                self.products = products.sorted { $0.discountPercentage > $1.discountPercentage }
                 self.state = .loaded
             case .failure:
-                self.state = .error(message: "Error ao carregar produtos.")
+                self.state = .error
             }
         }
     }
 }
 
+// MARK: - UITableViewDataSource
+
 extension ProductListViewController: UITableViewDataSource {
 
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int)
-        -> Int {
-        products.count
+    func numberOfSections(in tableView: UITableView) -> Int {
+        guard !products.isEmpty else { return 0 }
+        return products.count > 1 ? 2 : 1
     }
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath)
-        -> UITableViewCell {
-        guard
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if section == 0 { return 1 }
+        return max(0, products.count - 1)
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let product = indexPath.section == 0 ? products[0] : products[indexPath.row + 1]
+
+        if indexPath.section == 0 {
             let cell = tableView.dequeueReusableCell(
-                withIdentifier: "ProductCell",
+                withIdentifier: HeroDealCell.identifier,
                 for: indexPath
-            ) as? ProductCell
-        else {
-            return UITableViewCell()
+            ) as? HeroDealCell
+            cell?.configure(with: product)
+            return cell ?? UITableViewCell()
         }
 
-        let product = products[indexPath.row]
-        cell.configure(with: product)
-        return cell
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: ProductCell.identifier,
+            for: indexPath
+        ) as? ProductCell
+        cell?.configure(with: product)
+        return cell ?? UITableViewCell()
+    }
+
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        guard section == 1 else { return nil }
+
+        let header = UIView()
+        let titleLabel = UILabel()
+        titleLabel.text = "Todas as ofertas"
+        titleLabel.font = DesignSystem.text(15, weight: .semibold)
+        titleLabel.textColor = DesignSystem.ink
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        header.addSubview(titleLabel)
+
+        NSLayoutConstraint.activate([
+            titleLabel.leadingAnchor.constraint(equalTo: header.leadingAnchor, constant: DesignSystem.margin),
+            titleLabel.bottomAnchor.constraint(equalTo: header.bottomAnchor, constant: -10)
+        ])
+        return header
+    }
+
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        section == 1 ? 48 : 0
     }
 }
 
+// MARK: - UITableViewDelegate
+
 extension ProductListViewController: UITableViewDelegate {
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        let product = products[indexPath.row]
-        let detailVC = ProductDetailViewController(product: product)
-        navigationController?.pushViewController(detailVC, animated: true)
+        let product = indexPath.section == 0 ? products[0] : products[indexPath.row + 1]
+        navigationController?.pushViewController(
+            ProductDetailViewController(product: product),
+            animated: true
+        )
     }
 }
