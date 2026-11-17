@@ -6,11 +6,11 @@
 //
 import UIKit
 
-class ProductCell: UITableViewCell {
-    let thumbnailImageView = UIImageView()
-    let titleLabel = UILabel()
-    let priceLabel = UILabel()
-    let discountLabel = UILabel()
+final class ProductCell: UITableViewCell {
+    private let thumbnailImageView = UIImageView()
+    private let titleLabel = UILabel()
+    private let priceLabel = UILabel()
+    private let discountLabel = UILabel()
     
     private var currentImageURL: String?
 
@@ -27,6 +27,11 @@ class ProductCell: UITableViewCell {
         priceLabel.translatesAutoresizingMaskIntoConstraints = false
         discountLabel.translatesAutoresizingMaskIntoConstraints = false
 
+        configureViews()
+        setupConstraints()
+    }
+    
+    private func configureViews() {
         thumbnailImageView.contentMode = .scaleAspectFill
         thumbnailImageView.clipsToBounds = true
         thumbnailImageView.layer.cornerRadius = 8
@@ -44,7 +49,9 @@ class ProductCell: UITableViewCell {
         discountLabel.layer.cornerRadius = 4
         discountLabel.clipsToBounds = true
         discountLabel.textAlignment = .center
-
+    }
+    
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             thumbnailImageView.leadingAnchor.constraint(
                 equalTo: contentView.leadingAnchor,
