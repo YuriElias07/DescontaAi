@@ -30,8 +30,20 @@ final class ProductListViewController: UIViewController {
 
         title = "DescontaAi"
         view.backgroundColor = .systemBackground
+        setupNavigationBar()
         setupTableView()
         loadProducts()
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(wishlistDidChange),
+            name: .wishlistDidChange,
+            object: nil
+        )
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     /// toda vez que muda a state, automaticamente deve chamar o updateUI()
     private var state: ViewState = .loading {
@@ -69,6 +81,34 @@ final class ProductListViewController: UIViewController {
             errorLabel.text = "Nenhum produto encontrado"
             retryButton.isHidden = true
         }
+    }
+
+    private func setupNavigationBar() {
+        let cartButton = UIBarButtonItem(
+            image: UIImage(systemName: "cart"),
+            style: .plain,
+            target: self,
+            action: #selector(cartTapped)
+        )
+        navigationItem.rightBarButtonItem = cartButton
+        updateCartBadge()
+    }
+    
+    private func updateCartBadge() {
+        let count = WishlistService.shared.items.count
+        navigationItem.rightBarButtonItem?.image = count > 0
+            ? UIImage(systemName: "cart.fill.badge.plus")
+            : UIImage(systemName: "cart")
+    }
+    
+    @objc private func cartTapped() {
+        let wishlistVC = WishlistViewController()
+        let navController = UINavigationController(rootViewController: wishlistVC)
+        present(navController, animated: true)
+    }
+    
+    @objc private func wishlistDidChange() {
+        updateCartBadge()
     }
 
     private func setupTableView() {
@@ -176,10 +216,8 @@ extension ProductListViewController: UITableViewDataSource {
 }
 
 extension ProductListViewController: UITableViewDelegate {
-    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
         let product = products[indexPath.row]
         let detailVC = ProductDetailViewController(product: product)
         navigationController?.pushViewController(detailVC, animated: true)

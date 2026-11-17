@@ -90,8 +90,9 @@ final class ProductCell: UITableViewCell {
                 equalTo: contentView.trailingAnchor,
                 constant: -12
             ),
-            discountLabel.centerYAnchor.constraint(
-                equalTo: priceLabel.centerYAnchor
+            discountLabel.bottomAnchor.constraint(
+                equalTo: contentView.bottomAnchor,
+                constant: -12
             ),
             discountLabel.widthAnchor.constraint(
                 greaterThanOrEqualToConstant: 50

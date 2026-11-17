@@ -32,8 +32,48 @@ final class ProductDetailViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = "Detalhes"
+        setupNavigationBar()
         setupViews()
         configure()
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(wishlistDidChange),
+            name: .wishlistDidChange,
+            object: nil
+        )
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    private func setupNavigationBar() {
+        updateCartButton()
+    }
+    
+    private func updateCartButton() {
+        let isInWishlist = WishlistService.shared.contains(product)
+        let iconName = isInWishlist ? "cart.fill" : "cart"
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: iconName),
+            style: .plain,
+            target: self,
+            action: #selector(cartTapped)
+        )
+    }
+    
+    @objc private func cartTapped() {
+        if WishlistService.shared.contains(product) {
+            WishlistService.shared.remove(product)
+        } else {
+            WishlistService.shared.add(product)
+        }
+    }
+    
+    @objc private func wishlistDidChange() {
+        updateCartButton()
     }
     
     private func setupViews() {
