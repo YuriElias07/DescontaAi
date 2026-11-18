@@ -18,6 +18,15 @@ O projeto usa o formato novo de projeto do Xcode 27 (`DescontaAi.xcodeproj/proje
 - **Sacola:** adicionar e remover produtos, ver o total, limpar tudo e abrir a sacola direto da tela de detalhes pelo botão "Ver carrinho".
 - **Estados da aplicação:** carregamento, erro com botão "Tentar de novo" e lista vazia com estado de "sacola vazia".
 
+<div align="center">
+  <img width="250" src="https://github.com/user-attachments/assets/64ded533-1046-4dd0-8446-94ba9c301d84" />
+  &nbsp;&nbsp;&nbsp;
+  <img width="250" src="https://github.com/user-attachments/assets/ee15bc0b-d769-4656-8a77-2ea8bb5b0c55" />
+  &nbsp;&nbsp;&nbsp;
+  <img width="250" src="https://github.com/user-attachments/assets/c04bf724-81f9-4512-818d-2faaeabcea9f" />
+</div>
+
+
 ## 🛠️ Tecnologias e conceitos
 
 - **UIKit:** construção das interfaces nativas, sem storyboard nas telas (apenas o `LaunchScreen`).
