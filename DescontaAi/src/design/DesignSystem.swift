@@ -3,7 +3,7 @@
 //  DescontaAi
 //
 //  Cores, fontes e medidas usadas no app.
-//  A ideia é simples: papel frio, azul para dinheiro e amarelo para desconto.
+//  A ideia é simples: fundo claro, azul para dinheiro e amarelo para desconto.
 //
 
 import UIKit
@@ -14,7 +14,6 @@ enum DesignSystem {
 
     static let background = UIColor(hex: 0xF6F7FB)
     static let white = UIColor.white
-    static let wash = UIColor(hex: 0xE9ECFF)
     static let ink = UIColor(hex: 0x15171E)
     static let gray = UIColor(hex: 0x6B7080)
     static let blue = UIColor(hex: 0x2334E5)
@@ -25,20 +24,9 @@ enum DesignSystem {
     /// Margem lateral padrão das telas.
     static let margin: CGFloat = 20
 
-    // MARK: Fontes
+    // MARK: Fonte
 
-    /// Números grandes (preço, desconto) em SF comprimida.
-    static func number(_ size: CGFloat) -> UIFont {
-        UIFont.systemFont(ofSize: size, weight: .black, width: .condensed)
-    }
-
-    /// Nome de produto e descrição em New York.
-    static func serif(_ size: CGFloat, weight: UIFont.Weight = .regular) -> UIFont {
-        let font = UIFont.systemFont(ofSize: size, weight: weight)
-        guard let descriptor = font.fontDescriptor.withDesign(.serif) else { return font }
-        return UIFont(descriptor: descriptor, size: size)
-    }
-
+    /// Todas as fontes do app usam a fonte do sistema.
     static func text(_ size: CGFloat, weight: UIFont.Weight = .regular) -> UIFont {
         UIFont.systemFont(ofSize: size, weight: weight)
     }

@@ -39,7 +39,7 @@ final class ProductDetailViewController: UIViewController {
         setupImage()
         setupCategory()
         setupInfo()
-        configure() 
+        configure()
 
         NotificationCenter.default.addObserver(
             self,
@@ -92,16 +92,16 @@ final class ProductDetailViewController: UIViewController {
         imageView.backgroundColor = DesignSystem.white
         imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = 26
+        imageView.layer.cornerRadius = 16
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageContainer.addSubview(imageView)
 
         discountLabel.text = DesignSystem.discount(product.discountPercentage)
-        discountLabel.font = DesignSystem.number(34)
+        discountLabel.font = DesignSystem.text(17, weight: .bold)
         discountLabel.textColor = DesignSystem.ink
         discountLabel.backgroundColor = DesignSystem.yellow
         discountLabel.textAlignment = .center
-        discountLabel.layer.cornerRadius = 10
+        discountLabel.layer.cornerRadius = 8
         discountLabel.layer.masksToBounds = true
         discountLabel.translatesAutoresizingMaskIntoConstraints = false
         imageContainer.addSubview(discountLabel)
@@ -116,8 +116,8 @@ final class ProductDetailViewController: UIViewController {
 
             discountLabel.topAnchor.constraint(equalTo: imageContainer.topAnchor, constant: 20),
             discountLabel.leadingAnchor.constraint(equalTo: imageContainer.leadingAnchor, constant: 20),
-            discountLabel.widthAnchor.constraint(equalToConstant: 116),
-            discountLabel.heightAnchor.constraint(equalToConstant: 50)
+            discountLabel.widthAnchor.constraint(equalToConstant: 76),
+            discountLabel.heightAnchor.constraint(equalToConstant: 34)
         ])
 
         stackView.addArrangedSubview(imageContainer)
@@ -151,7 +151,7 @@ final class ProductDetailViewController: UIViewController {
 
     private func setupInfo() {
         titleLabel.text = product.title
-        titleLabel.font = DesignSystem.serif(28, weight: .semibold)
+        titleLabel.font = DesignSystem.text(24, weight: .semibold)
         titleLabel.textColor = DesignSystem.ink
         titleLabel.numberOfLines = 0
         stackView.addArrangedSubview(titleLabel)
@@ -169,7 +169,7 @@ final class ProductDetailViewController: UIViewController {
         stackView.setCustomSpacing(2, after: oldPriceLabel)
 
         priceLabel.text = DesignSystem.price(product.price)
-        priceLabel.font = DesignSystem.number(46)
+        priceLabel.font = DesignSystem.text(38, weight: .bold)
         priceLabel.textColor = DesignSystem.blue
         stackView.addArrangedSubview(priceLabel)
         stackView.setCustomSpacing(6, after: priceLabel)
@@ -189,7 +189,7 @@ final class ProductDetailViewController: UIViewController {
 
         let descriptionLabel = UILabel()
         descriptionLabel.text = product.description
-        descriptionLabel.font = DesignSystem.serif(16.5)
+        descriptionLabel.font = DesignSystem.text(15)
         descriptionLabel.textColor = DesignSystem.ink
         descriptionLabel.numberOfLines = 0
         stackView.addArrangedSubview(descriptionLabel)
@@ -233,11 +233,16 @@ final class ProductDetailViewController: UIViewController {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
 
         if WishlistService.shared.contains(product) {
-            WishlistService.shared.remove(product)
+            openWishlist()
         } else {
             WishlistService.shared.add(product)
+            updateButton()
         }
-        updateButton()
+    }
+
+    private func openWishlist() {
+        let wishlist = WishlistViewController()
+        present(UINavigationController(rootViewController: wishlist), animated: true)
     }
 
     @objc private func wishlistDidChange() {
@@ -247,7 +252,7 @@ final class ProductDetailViewController: UIViewController {
     private func updateButton() {
         let inBag = WishlistService.shared.contains(product)
 
-        addButton.setTitle(inBag ? "Na sacola" : "Adicionar à sacola", for: .normal)
+        addButton.setTitle(inBag ? "Ver carrinho" : "Adicionar à sacola", for: .normal)
         addButton.backgroundColor = inBag ? DesignSystem.blueSoft : DesignSystem.blue
         addButton.setTitleColor(inBag ? DesignSystem.blue : .white, for: .normal)
     }

@@ -31,26 +31,28 @@ final class HeroDealCell: UITableViewCell {
     }
 
     private func setupView() {
-        panel.backgroundColor = DesignSystem.wash
-        panel.layer.cornerRadius = 30
+        panel.backgroundColor = DesignSystem.white
+        panel.layer.cornerRadius = 20
+        panel.layer.borderWidth = 1
+        panel.layer.borderColor = DesignSystem.line.cgColor
 
         productImageView.backgroundColor = DesignSystem.white
         productImageView.contentMode = .scaleAspectFit
         productImageView.clipsToBounds = true
-        productImageView.layer.cornerRadius = 26
+        productImageView.layer.cornerRadius = 14
 
         discountLabel.textAlignment = .center
-        discountLabel.font = DesignSystem.number(22)
+        discountLabel.font = DesignSystem.text(17, weight: .bold)
         discountLabel.textColor = DesignSystem.ink
         discountLabel.backgroundColor = DesignSystem.yellow
-        discountLabel.layer.cornerRadius = 8
+        discountLabel.layer.cornerRadius = 6
         discountLabel.layer.masksToBounds = true
 
-        titleLabel.font = DesignSystem.serif(21, weight: .semibold)
+        titleLabel.font = DesignSystem.text(18, weight: .semibold)
         titleLabel.textColor = DesignSystem.ink
         titleLabel.numberOfLines = 2
 
-        priceLabel.font = DesignSystem.number(27)
+        priceLabel.font = DesignSystem.text(22, weight: .bold)
         priceLabel.textColor = DesignSystem.blue
 
         oldPriceLabel.font = DesignSystem.text(12.5)
@@ -102,8 +104,8 @@ final class HeroDealCell: UITableViewCell {
             productImageView.trailingAnchor.constraint(equalTo: panel.trailingAnchor, constant: -14),
             productImageView.heightAnchor.constraint(equalToConstant: 196),
 
-            discountLabel.widthAnchor.constraint(equalToConstant: 74),
-            discountLabel.heightAnchor.constraint(equalToConstant: 34),
+            discountLabel.widthAnchor.constraint(equalToConstant: 64),
+            discountLabel.heightAnchor.constraint(equalToConstant: 30),
 
             infoRow.topAnchor.constraint(equalTo: productImageView.bottomAnchor, constant: 16),
             infoRow.leadingAnchor.constraint(equalTo: panel.leadingAnchor, constant: 18),
