@@ -78,7 +78,7 @@ final class WishlistViewController: UIViewController {
     }
 
     private func setupToolbar() {
-        totalLabel.font = DesignSystem.number(20)
+        totalLabel.font = DesignSystem.text(19, weight: .bold)
         totalLabel.textColor = DesignSystem.ink
         totalLabel.textAlignment = .center
 

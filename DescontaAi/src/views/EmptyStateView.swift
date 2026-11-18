@@ -22,7 +22,7 @@ final class EmptyStateView: UIView {
 
         let titleLabel = UILabel()
         titleLabel.text = title
-        titleLabel.font = DesignSystem.serif(22, weight: .semibold)
+        titleLabel.font = DesignSystem.text(20, weight: .semibold)
         titleLabel.textColor = DesignSystem.ink
         titleLabel.textAlignment = .center
 

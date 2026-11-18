@@ -64,7 +64,7 @@ final class ProductListViewController: UIViewController {
 
         let titleLabel = UILabel()
         titleLabel.text = "DescontaAí"
-        titleLabel.font = DesignSystem.number(25)
+        titleLabel.font = DesignSystem.text(24, weight: .bold)
         titleLabel.textColor = DesignSystem.ink
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         header.addSubview(titleLabel)

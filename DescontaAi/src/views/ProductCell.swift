@@ -32,21 +32,21 @@ final class ProductCell: UITableViewCell {
         thumbnailImageView.backgroundColor = DesignSystem.white
         thumbnailImageView.contentMode = .scaleAspectFit
         thumbnailImageView.clipsToBounds = true
-        thumbnailImageView.layer.cornerRadius = 18
+        thumbnailImageView.layer.cornerRadius = 12
         thumbnailImageView.layer.borderWidth = 1
         thumbnailImageView.layer.borderColor = DesignSystem.line.cgColor
 
-        titleLabel.font = DesignSystem.serif(15.5, weight: .medium)
+        titleLabel.font = DesignSystem.text(15, weight: .medium)
         titleLabel.textColor = DesignSystem.ink
         titleLabel.numberOfLines = 2
 
-        priceLabel.font = DesignSystem.number(19)
+        priceLabel.font = DesignSystem.text(18, weight: .bold)
         priceLabel.textColor = DesignSystem.blue
 
         oldPriceLabel.font = DesignSystem.text(12.5)
         oldPriceLabel.textColor = DesignSystem.gray
 
-        discountLabel.font = DesignSystem.number(22)
+        discountLabel.font = DesignSystem.text(17, weight: .bold)
         discountLabel.textColor = DesignSystem.ink
         discountLabel.textAlignment = .right
 
