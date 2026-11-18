@@ -3,7 +3,7 @@ name: CI
 # Dispara a cada push e a cada PR. Também roda manualmente.
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
   workflow_dispatch:
 
@@ -19,9 +19,10 @@ env:
   # O projeto tem deployment target iOS 27.2, então o CI precisa do Xcode 27
   # (imagem preview xcode-27) e do simulador iOS 27.2.
   SCHEME: DescontaAi
-  SIMULATOR_NAME: iPhone 15
-  SIMULATOR_OS: "17.5"
+  SIMULATOR_NAME: iPhone 17
+  SIMULATOR_OS: "27.2"
   PROJECT: DescontaAi.xcodeproj
+  XCODE_APP: /Applications/Xcode_27.2.app
   # Versão do SwiftLint usada no CI — mesma da máquina de dev.
   SWIFTLINT_VERSION: "0.65.1"
 
@@ -51,13 +52,13 @@ jobs:
 
   build:
     name: Build
-    runs-on: macos-15
+    runs-on: xcode-27
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -switch /Applications/Xcode_16.1.app
+        run: sudo xcode-select -switch "$XCODE_APP"
 
       - name: Show toolchain
         run: |
@@ -85,13 +86,13 @@ jobs:
 
   unit-tests:
     name: Unit Tests
-    runs-on: macos-15
+    runs-on: xcode-27
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -switch /Applications/Xcode_16.1.app
+        run: sudo xcode-select -switch "$XCODE_APP"
 
       - name: Cache DerivedData
         uses: actions/cache@v4
@@ -100,6 +101,15 @@ jobs:
           key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/*.swift', '**/*.xcproj') }}
           restore-keys: |
             ${{ runner.os }}-deriveddata-
+
+      - name: Boot simulator
+        # Sobe o simulador ANTES do xcodebuild. Sem isso, o app de teste
+        # tenta abrir em um simulador que ainda está iniciando e o xcodebuild
+        # falha com "Failed to establish communication with the test runner
+        # (Channel disconnected)".
+        run: |
+          xcrun simctl boot "$SIMULATOR_NAME" || true
+          xcrun simctl bootstatus "$SIMULATOR_NAME" -b
 
       - name: Run unit tests
         run: |
@@ -110,8 +120,8 @@ jobs:
             -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=$SIMULATOR_OS" \
             -derivedDataPath "$HOME/Library/Developer/Xcode/DerivedData" \
             -only-testing:DescontaAiTests \
+            -parallel-testing-enabled NO \
             -resultBundlePath unit-tests.xcresult \
-            CODE_SIGNING_ALLOWED=NO \
             | xcbeautify
 
       - name: Upload test results
@@ -130,7 +140,7 @@ jobs:
   #       uses: actions/checkout@v4
 
   #     - name: Select Xcode
-  #       run: sudo xcode-select -switch /Applications/Xcode_27.2.app
+  #       run: sudo xcode-select -switch "$XCODE_APP"
 
   #     - name: Cache DerivedData
   #       uses: actions/cache@v4
@@ -139,6 +149,11 @@ jobs:
   #         key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/*.swift', '**/*.xcproj') }}
   #         restore-keys: |
   #           ${{ runner.os }}-deriveddata-
+
+  #     - name: Boot simulator
+  #       run: |
+  #         xcrun simctl boot "$SIMULATOR_NAME" || true
+  #         xcrun simctl bootstatus "$SIMULATOR_NAME" -b
 
   #     - name: Run UI tests
   #       run: |
@@ -149,8 +164,8 @@ jobs:
   #           -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=$SIMULATOR_OS" \
   #           -derivedDataPath "$HOME/Library/Developer/Xcode/DerivedData" \
   #           -only-testing:DescontaAiUITests \
+  #           -parallel-testing-enabled NO \
   #           -resultBundlePath ui-tests.xcresult \
-  #           CODE_SIGNING_ALLOWED=NO \
   #           | xcbeautify
 
   #     - name: Upload test results
