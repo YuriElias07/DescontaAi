@@ -4,27 +4,43 @@ Aplicativo iOS desenvolvido em **UIKit** para explorar ofertas e promoções de 
 
 ## 📱 Sobre o projeto
 
-O **DescontaAí** é um projeto desenvolvido com foco no aprendizado e na prática dos fundamentos do desenvolvimento iOS nativo. 
+O **DescontaAí** é um projeto desenvolvido com foco no aprendizado e na prática dos fundamentos do desenvolvimento iOS nativo.
 
-A aplicação possui uma navegação simples e intuitiva, dividida em duas telas: listagem de produtos e detalhes da oferta, utilizando `UINavigationController`.
+A aplicação possui uma navegação simples e intuitiva, dividida em três telas: listagem de produtos, detalhes da oferta e sacola. A navegação entre lista e detalhe usa `UINavigationController`; a sacola abre como modal, também dentro de um `UINavigationController`.
+
+O projeto usa o formato novo de projeto do Xcode 27 (`DescontaAi.xcodeproj/project.xcproj`), então precisa do **Xcode 27** para abrir.
 
 ## ✨ Funcionalidades
 
-- **Listagem de produtos:** consumo de dados da API e exibição em uma `UITableView`, com thumbnail, nome, preço e percentual de desconto.
-- **Destaque de ofertas:** identificação visual dos produtos com maiores percentuais de desconto.
-- **Detalhes do produto:** visualização de imagem em destaque, descrição, preço, desconto e categoria.
-- **Estados da aplicação:** tratamento de carregamento e erros durante a requisição de dados.
+- **Listagem de produtos:** consumo de dados da API e exibição em uma `UITableView`, com thumbnail, nome, preço, preço original riscado e percentual de desconto.
+- **Destaque de ofertas:** o produto com maior desconto ganha um card maior no topo da lista ("Maior desconto da lista"), e o restante aparece em uma segunda seção, ordenado do maior desconto para o menor.
+- **Detalhes do produto:** imagem em destaque, categoria, título, preço, quanto você economiza e descrição.
+- **Sacola:** adicionar e remover produtos, ver o total, limpar tudo e abrir a sacola direto da tela de detalhes pelo botão "Ver carrinho".
+- **Estados da aplicação:** carregamento, erro com botão "Tentar de novo" e lista vazia com estado de "sacola vazia".
+
+<div align="center">
+  <img width="250" src="https://github.com/user-attachments/assets/64ded533-1046-4dd0-8446-94ba9c301d84" />
+  &nbsp;&nbsp;&nbsp;
+  <img width="250" src="https://github.com/user-attachments/assets/ee15bc0b-d769-4656-8a77-2ea8bb5b0c55" />
+  &nbsp;&nbsp;&nbsp;
+  <img width="250" src="https://github.com/user-attachments/assets/c04bf724-81f9-4512-818d-2faaeabcea9f" />
+</div>
+
 
 ## 🛠️ Tecnologias e conceitos
 
-- **UIKit:** construção das interfaces nativas.
-- **UITableView:** listagem dinâmica com reutilização de células.
+- **UIKit:** construção das interfaces nativas, sem storyboard nas telas (apenas o `LaunchScreen`).
+- **UITableView:** listagem dinâmica com reutilização de células (`dequeueReusableCell` + `prepareForReuse`).
 - **UINavigationController:** gerenciamento da navegação entre telas.
-- **URLSession:** comunicação com a API REST.
+- **Auto Layout programático:** constraints e `UIStackView` para layouts adaptáveis.
+- **URLSession:** comunicação com a API REST e carregamento assíncrono das imagens.
 - **Codable:** decodificação e mapeamento de respostas JSON.
-- **Auto Layout:** construção de interfaces adaptáveis.
-- **Thread Safety:** atualização da interface na main thread.
-- **Separação de responsabilidades:** organização do código e das camadas da aplicação.
+- **NotificationCenter:** aviso de "sacola mudou" para as telas se atualizarem sem se conhecerem.
+- **Singleton:** `WishlistService.shared` como fonte única do estado da sacola.
+- **Thread Safety:** atualização da interface sempre na main thread.
+- **Design System:** cores, fontes e formatação de preço centralizadas em `DesignSystem`.
+- **Testes:** Swift Testing (`import Testing`) no alvo `DescontaAiTests`.
+- **Separação de responsabilidades:** controllers cuidam da tela, células só desenham, services cuidam de rede e estado.
 
 ## 🌐 API
 
@@ -32,24 +48,28 @@ O projeto utiliza a [DummyJSON Products API](https://dummyjson.com/products) par
 
 **Endpoint principal:**
 ```http
-GET https://dummyjson.com/products
+GET https://dummyjson.com/products?limit=0
 ```
+
+O `limit=0` traz todos os produtos. Depois do decode, o app filtra apenas as categorias de hardware: `laptops`, `smartphones`, `tablets` e `mobile-accessories`.
 
 **Principais campos utilizados:**
 
 | Campo | Descrição |
 |---|---|
+| `id` | Identificador do produto |
 | `title` | Nome do produto |
 | `price` | Preço |
 | `discountPercentage` | Percentual de desconto |
 | `thumbnail` | Imagem em miniatura |
+| `images` | Imagens em tamanho maior (usada no destaque e no detalhe) |
 | `description` | Descrição do produto |
 | `category` | Categoria |
 
 ## 🔍 Lint (SwiftLint)
 
 O "ESLint" do mundo Swift é o **[SwiftLint](https://github.com/realm/SwiftLint)**.
-Ele já vem instalado no projeto (via Homebrew) e é configurado em `.swiftlint.yml`.
+Ele é instalado na máquina de dev (via Homebrew) e configurado em `.swiftlint.yml`.
 
 ### Comandos
 
@@ -92,15 +112,20 @@ Os workflows ficam em `.github/workflows/`:
 
 | Workflow | Quando roda | O que faz |
 |---|---|---|
-| `ci.yml` | push em `main`, qualquer PR, ou manual | 4 jobs: **SwiftLint**, **Build**, **Unit Tests** (`DescontaAiTests`) e **UI Tests** (`DescontaAiUITests`). Publica os `.xcresult` como artifact. |
-| `nightly.yml` | todo dia às 05:00 UTC, ou manual | roda a suíte completa (unit + UI) sem depender de push. |
-| `release.yml` | ao criar a tag `v*` | gera o `.xcarchive` assinado e envia para o TestFlight. |
+| `ci.yml` | push em `main`/`develop`, qualquer PR, ou manual | 3 jobs: **SwiftLint**, **Build** e **Unit Tests** (`DescontaAiTests`). Publica o `.xcresult` como artifact. |
+| `nightly.yml.disabled` | — | desativado; rodava a suíte completa todo dia às 05:00 UTC. |
+| `release.yml.disabled` | — | desativado; gerava o `.xcarchive` assinado para o TestFlight. |
 
-**Runner:** `xcode-27` (imagem preview do GitHub) com Xcode 27.2, porque o projeto tem
-deployment target iOS 27.2. A assinatura é desligada nos jobs de teste
-(`CODE_SIGNING_ALLOWED=NO`) — no simulador não há certificado involved.
+O job de **UI Tests** (`DescontaAiUITests`) existe no `ci.yml`, mas está comentado: a suíte hoje só mede tempo de launch, e rodar UI test no CI é caro e instável.
 
-**Para o `release.yml` funcionar**, crie em *Settings → Secrets and variables → Actions*:
+**Runner:** `xcode-27` (imagem preview do GitHub) com Xcode 27.2 e simulador iPhone 17 / iOS 27.2 — obrigatório porque o projeto usa o formato novo do Xcode 27 e tem deployment target iOS 27.2.
+
+Dois detalhes que evitam falha no CI:
+
+- o job de testes **sobe o simulador antes** (`xcrun simctl boot` + `simctl bootstatus -b`). Sem isso, o `xcodebuild` tenta falar com o app de teste enquanto o simulador ainda está iniciando e cai com *"Channel disconnected"*.
+- `CODE_SIGNING_ALLOWED=NO` fica só no job de **Build**. No simulador não existe certificado, mas o bundle de teste precisa de assinatura ad-hoc para ser instalado.
+
+**Para o `release.yml` funcionar** (quando for reativado), crie em *Settings → Secrets and variables → Actions*:
 
 - `ASC_KEY_ID` — App Store Connect → Users and Access → Keys
 - `ASC_ISSUER_ID` — ID do issuer da mesma chave
